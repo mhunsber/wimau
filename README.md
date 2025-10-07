@@ -28,7 +28,7 @@ Sync-WindowsImage -Image '.\myImage.vhdx' -SystemWsusServer
 ```ps1
 $updates = Find-WsusUpdate -ProductTitle 'WsusProduct' -UpdateServer (Get-WsusServer -Name 'mywsus' -PortNumber 8530)
 
-Get-WsusUpdateSelfContainedFile -Path '.\download-path'
+Get-WsusUpdateSelfContainedFile -WsusUpdate $updates -Path '.\download-path'
 ```
 
 ![](https://github.com/mhunsber/wimau/blob/main/images/wimau-ex-find-wsusupdate-1.gif)
