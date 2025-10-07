@@ -5,6 +5,8 @@ DISM and UpdateServices modules to help service offline images.
 
 ## Install
 
+wimau is published to PowerShell Gallery: https://www.powershellgallery.com/packages/wimau/
+
 ```ps1
 Install-Module -Name wimau
 ```
@@ -45,4 +47,6 @@ $env:Path = "$custom_dism_path;$env:PATH"
 
 ## Attributions
 
-Refactored into a module from Eric Siron's original script: https://virtualizationdojo.com/hyper-v/free-powershell-script-use-wsus-update-installation-media-hyper-v-templates/
+Refactored into a module from Eric Siron's original script:
+
+https://virtualizationdojo.com/hyper-v/free-powershell-script-use-wsus-update-installation-media-hyper-v-templates/
