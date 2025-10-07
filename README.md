@@ -9,6 +9,28 @@ DISM and UpdateServices modules to help service offline images.
 Install-Module -Name wimau
 ```
 
+## Example Uses
+
+### Install updates from WSUS on an offline VHD file
+
+Apply all approved updates from the system-defined WSUS server to a VHD file
+
+```ps1
+Sync-WindowsImage -Image '.\myImage.vhdx' -SystemWsusServer
+```
+
+![](https://github.com/mhunsber/wimau/blob/main/images/wimau-ex-sync-windowsimage-1.gif)
+
+### Search for and download update files for a specific WSUS product
+
+```ps1
+$updates = Find-WsusUpdate -ProductTitle 'WsusProduct' -UpdateServer (Get-WsusServer -Name 'mywsus' -PortNumber 8530)
+
+Get-WsusUpdateSelfContainedFile -Path '.\download-path'
+```
+
+![](https://github.com/mhunsber/wimau/blob/main/images/wimau-ex-find-wsusupdate-1.gif)
+
 ## Using a different version of DISM
 
 If you install DISM separately from the one shipped with Windows by default, you will need to manually import it and
