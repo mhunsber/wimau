@@ -399,7 +399,7 @@ function Get-WsusUpdateSelfContainedFile {
 				-PercentComplete (100 * ($i / $WsusUpdate.Length))
 
 			$updateServerConfiguration = $currentUpdate.UpdateServer.GetConfiguration()
-			$localContentCachePath = $updateServerConfiguration
+			$localContentCachePath = $updateServerConfiguration.LocalContentCachePath
 			$currentUpdate.GetInstallableItems().Files | Where-Object {
 				($_.Type -eq [Microsoft.UpdateServices.Administration.FileType]::SelfContained) -and `
 				($_.FileUri -match '[cab|msu]$')
@@ -419,20 +419,20 @@ function Get-WsusUpdateSelfContainedFile {
 							$downloadSkipped = $true
 						}
 					} # else it is cached already
+				}
 
-					if (Test-Path -Path $updateFilePath) {
-						[PSCustomObject]@{
-							Path    = $updateFilePath
-							Title   = $currentUpdate.Title
-							Product = $currentUpdate.ProductTitles
-						}
+				if (Test-Path -Path $updateFilePath) {
+					[PSCustomObject]@{
+						Path    = $updateFilePath
+						Title   = $currentUpdate.Title
+						Product = $currentUpdate.ProductTitles
 					}
-					elseif ($downloadSkipped) {
-						Write-Warning -Message "$($currentUpdate.Title) - User skipped download of $($_.FileUri)"
-					}
-					else {
-						Write-Error -Message "$($currentUpdate.Title) - Cannot find installable item at $updateFilePath."
-					}
+				}
+				elseif ($downloadSkipped) {
+					Write-Warning -Message "$($currentUpdate.Title) - User skipped download of $($_.FileUri)"
+				}
+				else {
+					Write-Error -Message "$($currentUpdate.Title) - Cannot find installable item at $updateFilePath."
 				}
 			}
 		}
