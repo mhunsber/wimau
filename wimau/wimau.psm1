@@ -205,6 +205,7 @@ function Update-WindowsImage {
 
 	end {
 		try {
+			$addedPackages = [System.Collections.Generic.List`1[PSCustomObject]]@()
 			Mount-WindowsImage -ImagePath $ImagePath -Index $ImageIndex -Path $mountPath | Out-Null
 			for($i = 0; $i -lt $allUpdateFiles.Count; $i++) {
 				try {
@@ -227,6 +228,7 @@ function Update-WindowsImage {
 					}
 
 					Add-WindowsPackage -PackagePath $packageFile.Path -Path $mountPath | Out-Null
+					$addedPackages.Add($packageFile)
 				}
 				catch {
 					# Add-WindowsPackage will throw terminating errors when in a try block, even when ErrorAction is set to Continue.
@@ -237,6 +239,12 @@ function Update-WindowsImage {
 
 			if ($RunUpdateCleanup) {
 				Repair-WindowsImage -Path $mountPath -StartComponentCleanup -ResetBase | Out-Null
+			}
+
+			[PSCustomObject]@{
+				ImagePath = $ImagePath
+				ImageIndex = $ImageIndex
+				InstalledPackages = $addedPackages
 			}
 		}
 		catch {
@@ -485,7 +493,12 @@ function Find-WindowsImage {
 		# Step 2: filter out invalid images and expand Image Indexes to individual array items
 		$ImageLocations = $ImageLocations | Foreach-Object {
 			Write-Verbose -Message ('Getting Windows Image(s) for "{0}"' -f $_.ImagePath)
-			$Images = Get-WindowsImage -ImagePath $_.ImagePath -ErrorAction SilentlyContinue
+			$Images = try {
+				Get-WindowsImage -ImagePath $_.ImagePath -ErrorVariable GetImageError
+			}
+			catch {
+				$null
+			}
 			if ($null -ne $Images) {
 				if ($_.ImagePath -imatch '\.vhdx?$') {
 					# VHD(X) files are always just 1 image at index 1, and we'll ignore the user's specification since its irrelevant
@@ -499,14 +512,14 @@ function Find-WindowsImage {
 						if ($_.Index -eq -1) {
 							# They want all of them
 							[PSCustomObject]@{
-								ImagePath = $_.FullName
+								ImagePath = $_.ImagePath
 								ImageIndex = $image.ImageIndex
 							}
 						}
 						elseif ($_.Index -contains $image.ImageIndex) {
 							# They've specifically selected this index
 							[PSCustomObject]@{
-								ImagePath = $_.FullName
+								ImagePath = $_.ImagePath
 								ImageIndex = $image.ImageIndex
 							}
 						}
@@ -514,7 +527,7 @@ function Find-WindowsImage {
 				}
 			}
 			else {
-				Write-Warning -Message ('SKIPPING PATH "{0}" - Error getting Windows Image(s) - {1}' -f $_.FullName, $GetImageError)
+				Write-Warning -Message ('SKIPPING PATH "{0}" - Error getting Windows Image(s) - {1}' -f $_.ImagePath, ($GetImageError -join "`r`n"))
 			}
 		}
 
